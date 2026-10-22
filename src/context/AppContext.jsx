@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { getInitialDraft } from '../utils/helpers';
 import { readStorage, writeStorage, resetStorage, STORAGE_KEYS } from '../services/storage';
 
@@ -14,6 +14,11 @@ export function AppProvider({ children }) {
     videoMimeType: '',
     playbackMode: 'muted',
   }));
+  const [paymentSettings, setPaymentSettings] = useState(() => readStorage(STORAGE_KEYS.cmsPaymentSettings, {
+    feeAmount: '',
+    paymentQr: null,
+    feeStructure: null,
+  }));
   const [correctionHistory, setCorrectionHistory] = useState(() => readStorage(STORAGE_KEYS.cmsCorrectionHistory, []));
   const [lastSubmitted, setLastSubmitted] = useState(() => readStorage(STORAGE_KEYS.cmsLastSubmittedApplication, null));
 
@@ -24,6 +29,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     writeStorage(STORAGE_KEYS.cmsBackgroundSettings, backgroundSettings);
   }, [backgroundSettings]);
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.cmsPaymentSettings, paymentSettings);
+  }, [paymentSettings]);
 
   useEffect(() => {
     writeStorage(STORAGE_KEYS.cmsDraftApplication, draft);
@@ -41,12 +50,18 @@ export function AppProvider({ children }) {
     writeStorage(STORAGE_KEYS.cmsLastSubmittedApplication, lastSubmitted);
   }, [lastSubmitted]);
 
-  const saveDraft = (nextDraft) => {
+  const saveDraft = useCallback((nextDraft) => {
     setDraft({ ...getInitialDraft(), ...nextDraft });
-  };
+  }, []);
 
   const updateBackgroundSettings = (nextSettings) => {
     setBackgroundSettings((current) => (
+      typeof nextSettings === 'function' ? nextSettings(current) : nextSettings
+    ));
+  };
+
+  const updatePaymentSettings = (nextSettings) => {
+    setPaymentSettings((current) => (
       typeof nextSettings === 'function' ? nextSettings(current) : nextSettings
     ));
   };
@@ -137,6 +152,7 @@ export function AppProvider({ children }) {
     setDraft(getInitialDraft());
     setApplications([]);
     setBackgroundSettings({ enabled: true, videoDataUrl: '', videoMimeType: '', playbackMode: 'muted' });
+    setPaymentSettings({ feeAmount: '', paymentQr: null, feeStructure: null });
     setCorrectionHistory([]);
     setLastSubmitted(null);
   };
@@ -146,6 +162,7 @@ export function AppProvider({ children }) {
     draft,
     applications,
     backgroundSettings,
+    paymentSettings,
     correctionHistory,
     lastSubmitted,
     saveDraft,
@@ -159,7 +176,8 @@ export function AppProvider({ children }) {
     resetDemoData,
     setDraft,
     setBackgroundSettings: updateBackgroundSettings,
-  }), [auth, draft, applications, backgroundSettings, correctionHistory, lastSubmitted]);
+    setPaymentSettings: updatePaymentSettings,
+  }), [auth, draft, applications, backgroundSettings, paymentSettings, correctionHistory, lastSubmitted, saveDraft]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

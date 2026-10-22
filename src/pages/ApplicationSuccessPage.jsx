@@ -24,7 +24,10 @@ export default function ApplicationSuccessPage() {
           </div>
           <div className="meta-block">
             <span>Status</span>
-            <strong>Enquiring</strong>
+            <strong>
+              {lastSubmitted?.status || 'Enquiring'}
+              {lastSubmitted?.paymentStatus === 'Unpaid' ? ' — Admission fee unpaid' : ''}
+            </strong>
           </div>
         </div>
 

@@ -2,9 +2,15 @@ import { Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import FileUploadField from '../components/FileUploadField';
 
 export default function OfficerSettingsPage() {
-  const { backgroundSettings, setBackgroundSettings } = useAppContext();
+  const {
+    backgroundSettings,
+    setBackgroundSettings,
+    paymentSettings,
+    setPaymentSettings,
+  } = useAppContext();
   const [error, setError] = useState('');
 
   const handleVideoUpload = (event) => {
@@ -122,6 +128,37 @@ export default function OfficerSettingsPage() {
             <button type="button" className="secondary-btn" onClick={clearVideo}><Trash2 size={16} /> Use default campus video</button>
             <button type="button" className="primary-btn" onClick={() => window.alert('Settings saved in local browser storage.')}><Save size={16} /> Save settings</button>
           </div>
+        </div>
+
+        <div className="content-panel settings-panel payment-settings-panel">
+          <div>
+            <p className="eyebrow accent">College configuration</p>
+            <h3>Admission payment details</h3>
+            <p className="field-help">Configure the approved fee and fee-structure document here. The applicant Payment page currently uses a demo-only QR and cannot process or verify payments; the uploaded QR is retained for later official integration.</p>
+          </div>
+          <div className="field-group">
+            <label htmlFor="admission-fee">Admission fee amount (INR)</label>
+            <input
+              id="admission-fee"
+              type="number"
+              min="0"
+              step="0.01"
+              value={paymentSettings.feeAmount}
+              onChange={(event) => setPaymentSettings((current) => ({ ...current, feeAmount: event.target.value }))}
+            />
+          </div>
+          <FileUploadField
+            label="Official payment QR image (optional)"
+            imageOnly
+            value={paymentSettings.paymentQr}
+            onChange={(paymentQr) => setPaymentSettings((current) => ({ ...current, paymentQr }))}
+          />
+          <FileUploadField
+            label="College fee structure (PDF or image)"
+            value={paymentSettings.feeStructure}
+            onChange={(feeStructure) => setPaymentSettings((current) => ({ ...current, feeStructure }))}
+          />
+          <small className="upload-storage-note">Fee, QR, and fee structure settings are stored in this browser only. They are not a payment gateway or a verified payment record.</small>
         </div>
       </section>
     </main>

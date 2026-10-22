@@ -59,7 +59,12 @@ export default function VCDetailPage() {
           </div>
         </div>
 
-        <ApplicationDocuments documents={application.documents} signature={application.signature} />
+        <ApplicationDocuments
+          documents={application.documents}
+          signature={application.signature}
+          studentSignature={application.studentSignature}
+          parentSignature={application.parentSignature}
+        />
 
         <div className="form-actions preview-actions">
           <Link to="/vc/dashboard" className="secondary-btn">Back to list</Link>

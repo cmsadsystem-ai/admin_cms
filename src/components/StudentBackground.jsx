@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
-export default function StudentBackground() {
+export default function StudentBackground({ showAudioControl = true }) {
   const { backgroundSettings } = useAppContext();
   const videoRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
@@ -58,7 +58,7 @@ export default function StudentBackground() {
         </div>
         <div className="hero-overlay" />
       </div>
-      {backgroundSettings.enabled ? (
+      {backgroundSettings.enabled && showAudioControl ? (
         <div className="background-audio-control">
           <button
             type="button"

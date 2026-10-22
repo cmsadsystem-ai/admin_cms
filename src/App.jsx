@@ -3,6 +3,7 @@ import { AppProvider, useAppContext } from './context/AppContext';
 import StudentBackground from './components/StudentBackground';
 import ApplicationPreviewPage from './pages/ApplicationPreviewPage';
 import ApplicationSuccessPage from './pages/ApplicationSuccessPage';
+import AdmissionPaymentPage from './pages/AdmissionPaymentPage';
 import LoginPage from './pages/LoginPage';
 import OfficerApplicationDetailPage from './pages/OfficerApplicationDetailPage';
 import OfficerDashboardPage from './pages/OfficerDashboardPage';
@@ -25,7 +26,10 @@ function ProtectedRoute({ children, allowedRole }) {
 
 function AppRoutes() {
   const { pathname } = useLocation();
-  const showStudentBackground = pathname === '/' || pathname === '/register';
+  const showStudentBackground = pathname === '/'
+    || pathname.startsWith('/register')
+    || pathname.startsWith('/application-')
+    || pathname === '/payment';
 
   return (
     <>
@@ -34,6 +38,7 @@ function AppRoutes() {
         <Route path="/" element={<StudentWelcomePage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/application-preview" element={<ApplicationPreviewPage />} />
+        <Route path="/payment" element={<AdmissionPaymentPage />} />
         <Route path="/application-success" element={<ApplicationSuccessPage />} />
         <Route path="/login/:role" element={<LoginPage />} />
 

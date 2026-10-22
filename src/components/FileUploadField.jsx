@@ -12,7 +12,7 @@ function readAsDataUrl(file) {
   });
 }
 
-export default function FileUploadField({ label, value, onChange, signature = false }) {
+export default function FileUploadField({ label, value, onChange, signature = false, imageOnly = false }) {
   const [error, setError] = useState('');
   const [isCropping, setIsCropping] = useState(false);
   const [cropSettings, setCropSettings] = useState({ zoom: 1, x: 0, y: 0 });
@@ -24,8 +24,8 @@ export default function FileUploadField({ label, value, onChange, signature = fa
 
     const isImage = file.type.startsWith('image/');
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    if (!isImage && (signature || !isPdf)) {
-      setError(signature ? 'Choose an image file for the signature.' : 'Choose an image or PDF file.');
+    if (!isImage && (signature || imageOnly || !isPdf)) {
+      setError(signature || imageOnly ? 'Choose an image file.' : 'Choose an image or PDF file.');
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
@@ -103,7 +103,7 @@ export default function FileUploadField({ label, value, onChange, signature = fa
           <ImagePlus size={17} /> Choose image
           <input className="visually-hidden" type="file" accept="image/*" onChange={handleFileChange} />
         </label>
-        {!signature ? (
+        {!signature && !imageOnly ? (
           <label className="upload-action">
             <FileUp size={17} /> Choose PDF
             <input className="visually-hidden" type="file" accept="application/pdf,.pdf" onChange={handleFileChange} />

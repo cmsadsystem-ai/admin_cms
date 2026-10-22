@@ -8,6 +8,11 @@ const defaultStorage = {
     videoMimeType: '',
     playbackMode: 'muted',
   },
+  cmsPaymentSettings: {
+    feeAmount: '',
+    paymentQr: null,
+    feeStructure: null,
+  },
   cmsLastSubmittedApplication: null,
   cmsCorrectionHistory: [],
 };

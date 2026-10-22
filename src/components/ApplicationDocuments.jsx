@@ -1,12 +1,34 @@
-export default function ApplicationDocuments({ documents = {}, signature }) {
-  const uploadedDocuments = Object.entries(documents).filter(([, file]) => file?.dataUrl);
-  const uploadedSignature = signature && typeof signature === 'object' && signature.dataUrl ? signature : null;
+const documentLabels = {
+  SSLC: 'SSLC Certificate',
+  HSC: 'HSC Certificate',
+  TC: 'Transfer Certificate (TC)',
+  CC: 'Conduct Certificate (CC)',
+  NativityCertificate: 'Nativity Certificate',
+  IncomeCertificate: 'Income Certificate',
+  AadhaarCard: 'Aadhaar Document',
+  StudentPhoto: 'Student Photo',
+  FirstGraduateCertificate: 'First Graduate Certificate',
+};
 
-  if (!uploadedDocuments.length && !uploadedSignature) return null;
+export default function ApplicationDocuments({
+  documents = {},
+  signature,
+  studentSignature = signature,
+  parentSignature,
+}) {
+  const uploadedDocuments = Object.entries(documents)
+    .filter(([, file]) => file?.dataUrl)
+    .map(([key, file]) => ({ key, label: documentLabels[key] || key, file }));
+  const signatureFile = studentSignature || signature;
+  const uploadedStudentSignature = signatureFile?.dataUrl ? signatureFile : null;
+  const uploadedParentSignature = parentSignature?.dataUrl ? parentSignature : null;
+
+  if (!uploadedDocuments.length && !uploadedStudentSignature && !uploadedParentSignature) return null;
 
   const files = [
-    ...uploadedDocuments.map(([key, file]) => ({ key, label: key, file })),
-    ...(uploadedSignature ? [{ key: 'signature', label: 'Student signature', file: uploadedSignature }] : []),
+    ...uploadedDocuments,
+    ...(uploadedStudentSignature ? [{ key: 'student-signature', label: 'Student Signature', file: uploadedStudentSignature }] : []),
+    ...(uploadedParentSignature ? [{ key: 'parent-signature', label: 'Parent Signature', file: uploadedParentSignature }] : []),
   ];
 
   return (

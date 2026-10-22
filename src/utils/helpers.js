@@ -1,8 +1,25 @@
-export function calculateCutoff({ mathematics = 0, physicsTheory = 0, physicsPractical = 0, chemistryTheory = 0, chemistryPractical = 0 }) {
-  const physicsTotal = Number(physicsTheory || 0) + Number(physicsPractical || 0);
-  const chemistryTotal = Number(chemistryTheory || 0) + Number(chemistryPractical || 0);
-  const mathematicsValue = Number(mathematics || 0);
-  return mathematicsValue + (physicsTotal + chemistryTotal) / 2;
+export const PROGRAMME_COURSES = {
+  UG: {
+    'B.E': ['CSE', 'BME', 'CS', 'ECE', 'MECH'],
+    'B.Tech': ['AI&DS', 'AI&ML'],
+  },
+  PG: {
+    'M.E': [],
+    'M.Tech': [],
+  },
+};
+
+export function calculateCutoff({ mathematics, physics, chemistry }) {
+  const marks = [mathematics, physics, chemistry];
+  const validMarks = marks.every((mark) => (
+    mark !== '' && mark !== null && mark !== undefined
+    && !(typeof mark === 'string' && mark.trim() === '')
+    && Number.isFinite(Number(mark)) && Number(mark) >= 0 && Number(mark) <= 100
+  ));
+
+  if (!validMarks) return null;
+
+  return Number(mathematics) + (Number(physics) / 2) + (Number(chemistry) / 2);
 }
 
 export function formatCurrency(value) {
@@ -74,15 +91,15 @@ export function getInitialDraft() {
   return {
     formNumber: generateDemoFormNumber(),
     applicationDate: new Date().toISOString().slice(0, 10),
-    admissionCategory: 'Government Quota',
-    firstGraduate: 'No',
+    admissionCategory: '',
+    firstGraduate: '',
     studentName: '',
     fatherName: '',
     fatherOccupation: '',
     motherName: '',
     motherOccupation: '',
     dateOfBirth: '',
-    gender: 'Male',
+    gender: '',
     aadhaar: '',
     studentMobile: '',
     parentMobile: '',
@@ -90,8 +107,8 @@ export function getInitialDraft() {
     bloodGroup: '',
     emisId: '',
     communicationAddress: '',
-    district: 'Namakkal',
-    state: 'Tamil Nadu',
+    district: '',
+    state: '',
     pinCode: '',
     schoolName: '',
     schoolAddress: '',
@@ -106,23 +123,24 @@ export function getInitialDraft() {
       firstPreference: '',
       additionalPreferences: [],
     },
-    hostelAccommodation: 'No',
+    programme: '',
+    degree: '',
+    accommodation: '',
+    hscMarks: '',
+    physicsMarks: '',
+    chemistryMarks: '',
+    fatherMobile: '',
+    motherMobile: '',
+    guardianName: '',
+    guardianOccupation: '',
+    guardianMobile: '',
+    hostelAccommodation: '',
     boardingPlace: '',
     busRoute: '',
     hostelApplication: 'No',
     transportApplication: 'No',
     transportRequirements: '',
-    certificates: {
-      SSLC: 'Original',
-      HSC: 'Original',
-      TC: 'Original',
-      CC: 'Original',
-      NativityCertificate: 'Original',
-      IncomeCertificate: 'Original',
-      AadhaarCard: 'Original',
-      FirstGraduateCertificate: 'Not Submitted',
-      PassportSizePhotographs: 'Original',
-    },
+    certificates: {},
     documents: {},
     fees: {
       AdmissionFees: 5000,
@@ -143,6 +161,9 @@ export function getInitialDraft() {
     declaration: false,
     parentDeclaration: false,
     signature: null,
+    studentSignature: null,
+    parentSignature: null,
+    workflowStep: 1,
     correctionNotes: '',
   };
 }

@@ -77,7 +77,12 @@ export default function OfficerApplicationDetailPage() {
             <div className="field-group full-width"><label>Student declaration</label><textarea value={draftApplication.declaration ? 'Accepted' : 'Not accepted'} readOnly /></div>
           </div>
 
-          <ApplicationDocuments documents={draftApplication.documents} signature={draftApplication.signature} />
+          <ApplicationDocuments
+            documents={draftApplication.documents}
+            signature={draftApplication.signature}
+            studentSignature={draftApplication.studentSignature}
+            parentSignature={draftApplication.parentSignature}
+          />
 
           <div className="detail-history">
             <h3>History</h3>
