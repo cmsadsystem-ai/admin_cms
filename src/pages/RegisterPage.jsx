@@ -17,7 +17,6 @@ const steps = [
   'Documents and signatures',
   'Fees Structure',
 ];
-const certificateOptions = ['Original', 'Xerox', 'Not Submitted'];
 const certificateLabels = {
   SSLC: 'SSLC Certificate',
   HSC: 'HSC Certificate',
@@ -29,6 +28,25 @@ const certificateLabels = {
   FirstGraduateCertificate: 'First Graduate Certificate',
   PassportSizePhotographs: 'Student Photo',
 };
+const tamilNaduDistricts = [
+  'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri',
+  'Dindigul', 'Erode', 'Kallakurichi', 'Kancheepuram', 'Kanniyakumari', 'Karur',
+  'Krishnagiri', 'Madurai', 'Mayiladuthurai', 'Nagapattinam', 'Namakkal',
+  'Nilgiris', 'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet',
+  'Salem', 'Sivaganga', 'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi',
+  'Tiruchirappalli', 'Tirunelveli', 'Tirupathur', 'Tiruppur', 'Tiruvallur',
+  'Tiruvannamalai', 'Tiruvarur', 'Vellore', 'Viluppuram', 'Virudhunagar',
+];
+const indianStatesAndTerritories = [
+  'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam',
+  'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir',
+  'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh',
+  'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha',
+  'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
+  'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+];
+const communities = ['OC', 'BC', 'BC(M)', 'MBC & DNC', 'SC', 'SC(A)', 'ST', 'SCC'];
 const requiredMarks = ['mathematics', 'physicsMarks', 'chemistryMarks'];
 const markLabels = {
   mathematics: 'Mathematics',
@@ -52,6 +70,11 @@ function normalizeAdmissionCategory(category) {
   return category === 'Management' || category === 'Counselling' ? category : '';
 }
 
+function formatAadhaar(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 12);
+  return digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+}
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { draft, saveDraft } = useAppContext();
@@ -68,6 +91,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState(() => ({
     ...draft,
     signature: null,
+    aadhaar: formatAadhaar(draft?.aadhaar),
     admissionCategory: normalizeAdmissionCategory(draft?.admissionCategory),
     programme: draft?.programme || '',
     degree: draft?.degree || '',
@@ -163,7 +187,7 @@ export default function RegisterPage() {
         const mobileError = getIndianMobileError(formData.studentMobile);
         if (mobileError) nextErrors.studentMobile = mobileError;
       }
-      if (formData.aadhaar && !/^\d{12}$/.test(formData.aadhaar)) {
+      if (formData.aadhaar && !/^\d{12}$/.test(formData.aadhaar.replace(/\s/g, ''))) {
         nextErrors.aadhaar = 'Aadhaar number must contain 12 digits.';
       }
       if (formData.pinCode && !/^\d{6}$/.test(formData.pinCode)) {
@@ -263,7 +287,7 @@ export default function RegisterPage() {
           motherOccupation: record.motherOccupation,
           dateOfBirth: record.dateOfBirth,
           gender: record.gender,
-          aadhaar: record.aadhaar,
+          aadhaar: formatAadhaar(record.aadhaar),
           studentMobile: record.studentMobile,
           parentMobile: record.parentMobile,
           fatherMobile: record.parentMobile,
@@ -459,7 +483,7 @@ export default function RegisterPage() {
       </div>
       <div className="field-group">
         <label htmlFor="aadhaar">Aadhaar Number <span className="required-indicator">*</span></label>
-        <input id="aadhaar" type="text" required inputMode="numeric" pattern="[0-9]{12}" maxLength={12} autoComplete="off" value={formData.aadhaar || ''} onChange={(event) => updateField('aadhaar', event.target.value.replace(/\D/g, '').slice(0, 12))} />
+        <input id="aadhaar" type="text" required inputMode="numeric" pattern="[0-9]{4} [0-9]{4} [0-9]{4}" maxLength={14} placeholder="0000 0000 0000" autoComplete="off" value={formData.aadhaar || ''} onChange={(event) => updateField('aadhaar', formatAadhaar(event.target.value))} />
         {errors.aadhaar ? <small className="error-text">{errors.aadhaar}</small> : null}
       </div>
       <div className="field-group">
@@ -472,7 +496,10 @@ export default function RegisterPage() {
       </div>
       <div className="field-group">
         <label htmlFor="community">Community <span className="required-indicator">*</span></label>
-        <input id="community" required value={formData.community || ''} onChange={(event) => updateField('community', event.target.value)} />
+        <select id="community" required value={formData.community || ''} onChange={(event) => updateField('community', event.target.value)}>
+          <option value="">Choose community</option>
+          {communities.map((community) => <option key={community} value={community}>{community}</option>)}
+        </select>
         {errors.community ? <small className="error-text">{errors.community}</small> : null}
       </div>
       <div className="field-group">
@@ -487,12 +514,18 @@ export default function RegisterPage() {
       </div>
       <div className="field-group">
         <label htmlFor="district">District <span className="required-indicator">*</span></label>
-        <input id="district" required value={formData.district || ''} onChange={(event) => updateField('district', event.target.value)} />
+        <select id="district" required value={formData.district || ''} onChange={(event) => updateField('district', event.target.value)}>
+          <option value="">Choose district</option>
+          {tamilNaduDistricts.map((district) => <option key={district} value={district}>{district}</option>)}
+        </select>
         {errors.district ? <small className="error-text">{errors.district}</small> : null}
       </div>
       <div className="field-group">
         <label htmlFor="state">State <span className="required-indicator">*</span></label>
-        <input id="state" required value={formData.state || ''} onChange={(event) => updateField('state', event.target.value)} />
+        <select id="state" required value={formData.state || ''} onChange={(event) => updateField('state', event.target.value)}>
+          <option value="">Choose state / UT</option>
+          {indianStatesAndTerritories.map((state) => <option key={state} value={state}>{state}</option>)}
+        </select>
         {errors.state ? <small className="error-text">{errors.state}</small> : null}
       </div>
       <div className="field-group">
@@ -629,36 +662,6 @@ export default function RegisterPage() {
 
   const renderDocumentsStep = () => (
     <div className="card-list">
-      <div className="certificate-status-wrap">
-        <h3>Certificate status (optional)</h3>
-        <div className="table-scroll">
-          <table className="certificate-table">
-            <thead><tr><th>Certificate</th>{certificateOptions.map((option) => <th key={option}>{option}</th>)}</tr></thead>
-            <tbody>
-              {Object.entries(certificateLabels).map(([key, label]) => (
-                <tr key={key}>
-                  <td>{label}</td>
-                  {certificateOptions.map((option) => (
-                    <td key={`${key}-${option}`}>
-                      <input
-                        type="radio"
-                        name={`certificate-${key}`}
-                        aria-label={`${label}: ${option}`}
-                        checked={(formData.certificates?.[key] || '') === option}
-                        onChange={() => setFormData((previous) => ({
-                          ...previous,
-                          certificates: { ...previous.certificates, [key]: option },
-                        }))}
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       <h3>Upload documents (optional)</h3>
       <div className="certificate-upload-grid">
         {Object.entries(certificateLabels).map(([key, label]) => (
@@ -771,7 +774,7 @@ export default function RegisterPage() {
       <section className="content-panel form-panel">
         <div className="section-header space-between">
           <div>
-            <p className="eyebrow accent">Admissions Portal · Page {currentStep + 1} of 11</p>
+              <p className="eyebrow accent">Admissions Portal · Page {currentStep} of {steps.length}</p>
             <h2>{steps[currentStep - 1]}</h2>
           </div>
         </div>
@@ -779,7 +782,7 @@ export default function RegisterPage() {
         <div className="stepper" aria-label="Admission form pages">
           {steps.map((step, index) => (
             <div key={step} className={`step-item ${currentStep === index + 1 ? 'active' : index + 1 < currentStep ? 'complete' : ''}`}>
-              <span>{index + 2}</span>
+                <span>{index + 1}</span>
               <small>{step}</small>
             </div>
           ))}

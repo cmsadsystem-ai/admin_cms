@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { CheckCheck, Save, ShieldCheck } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { CheckCheck, Save } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import ApplicationDocuments from '../components/ApplicationDocuments';
@@ -10,12 +10,8 @@ export default function OfficerApplicationDetailPage() {
   const navigate = useNavigate();
   const { applications, updateApplication, confirmApplication, correctionHistory } = useAppContext();
   const application = useMemo(() => applications.find((item) => item.id === id), [applications, id]);
-  const [draftApplication, setDraftApplication] = useState(application || {});
+  const [draftApplication, setDraftApplication] = useState(() => application || {});
   const [note, setNote] = useState('');
-
-  useEffect(() => {
-    setDraftApplication(application || {});
-  }, [application]);
 
   if (!application) {
     return (

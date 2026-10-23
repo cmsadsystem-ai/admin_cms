@@ -20,8 +20,8 @@ export default function AdmissionPaymentPage() {
   };
 
   return (
-    <main className="page-shell payment-shell">
-      <section className="content-panel payment-panel">
+    <main className="page-shell payment-shell" style={{ background: 'transparent' }}>
+      <section className="content-panel payment-panel" style={{ background: 'rgba(255,255,255,0.28)', backdropFilter: 'blur(2px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: 'none' }}>
         <div className="section-header">
           <div>
             <p className="eyebrow accent">Admission Payment</p>
@@ -31,11 +31,11 @@ export default function AdmissionPaymentPage() {
         </div>
 
         <div className="payment-meta">
-          <div><span>Application reference</span><strong>{draft.formNumber || 'Not available'}</strong></div>
-          <div><span>Admission fee</span><strong>{formatCurrency(5000)}</strong></div>
+          <div style={{ background: 'rgba(255,255,255,0.38)' }}><span>Application reference</span><strong>{draft.formNumber || 'Not available'}</strong></div>
+          <div style={{ background: 'rgba(255,255,255,0.38)' }}><span>Admission fee</span><strong>{formatCurrency(5000)}</strong></div>
         </div>
 
-        <section className="payment-qr-section">
+        <section className="payment-qr-section" style={{ background: 'rgba(255,255,255,0.38)' }}>
           <h3>DEMO ONLY — NOT FOR REAL PAYMENT</h3>
           <QRCodeSVG
             className="payment-qr-image"
@@ -51,7 +51,7 @@ export default function AdmissionPaymentPage() {
           <p>The official payment QR can replace this demo value in the payment component after the college approves its payment integration.</p>
         </section>
 
-        <section className="payment-status" aria-live="polite">
+        <section className="payment-status" aria-live="polite" style={{ background: 'rgba(255,255,255,0.38)' }}>
           <h3><CreditCard size={18} /> Payment status</h3>
           <strong>Frontend demo — payment is not connected or verified.</strong>
           <p>No payment has been received. This application will not be marked paid or confirmed on this page.</p>
