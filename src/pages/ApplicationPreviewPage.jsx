@@ -1,4 +1,5 @@
-import { ArrowLeft, CreditCard, Printer, Send } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, CreditCard, Printer, Save, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { calculateCutoff, formatDate } from '../utils/helpers';
@@ -27,7 +28,9 @@ function PreviewBlock({ title, rows }) {
 
 export default function ApplicationPreviewPage() {
   const navigate = useNavigate();
-  const { draft, submitApplication } = useAppContext();
+  const { draft, saveDraft, submitApplication } = useAppContext();
+  const [staffViewName, setStaffViewName] = useState(draft.staffViewName || '');
+  const [staffViewCategory, setStaffViewCategory] = useState(draft.staffViewCategory || '');
   const cutoff = calculateCutoff({
     mathematics: draft.mathematics,
     physics: draft.physicsMarks,
@@ -49,9 +52,16 @@ export default function ApplicationPreviewPage() {
   const handleEnquiring = () => {
     const application = submitApplication({
       ...draft,
+      staffViewName,
+      staffViewCategory,
       cutOffMarks: cutoff ?? '',
     });
     navigate(`/application-success?id=${encodeURIComponent(application.id)}`);
+  };
+
+  const handleSaveDraft = () => {
+    saveDraft({ ...draft, staffViewName, staffViewCategory, cutOffMarks: cutoff ?? '' });
+    window.alert('Application draft saved in this browser.');
   };
 
   return (
@@ -187,25 +197,45 @@ export default function ApplicationPreviewPage() {
           </div>
         </section>
 
-        <section style={{ margin: '8px 0', fontSize: '0.72rem' }}>
-          <strong>FOR OFFICE USE ONLY — CERTIFICATES SUBMITTED</strong>
-          <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', marginTop: '4px' }}>
-            <thead><tr>{['Submitted type', 'SSLC', 'HSC', 'TC', 'CC', 'Nativity certificate', 'Income certificate', 'Aadhaar card', 'F.G', 'Photo'].map((heading) => <th key={heading} style={{ padding: '3px 2px', border: '1px solid #87918c', overflowWrap: 'anywhere' }}>{heading}</th>)}</tr></thead>
-            <tbody>{['Original', 'Xerox'].map((type) => <tr key={type}><th style={{ padding: '4px 2px', border: '1px solid #87918c' }}>{type}</th>{Array.from({ length: 9 }, (_, index) => <td key={index} style={{ height: '20px', border: '1px solid #87918c' }} />)}</tr>)}</tbody>
-          </table>
-          <div style={{ marginTop: '5px', padding: '5px', border: '1px solid #87918c' }}>Reference: __________________________________________________________________________________</div>
-        </section>
         <footer style={{ display: 'flex', justifyContent: 'space-between', marginTop: '14px', fontSize: '0.75rem' }}>
           <strong>ADMISSION OFFICER</strong><strong>VICE-CHAIRMAN</strong>
         </footer>
+        <section className="staff-view-section screen-only">
+          <h3>Staff view</h3>
+          <div className="staff-view-fields">
+            <label className="field-group" htmlFor="staff-view-name">
+              Staff name
+              <input
+                id="staff-view-name"
+                type="text"
+                value={staffViewName}
+                onChange={(event) => setStaffViewName(event.target.value)}
+                placeholder="Type staff name"
+              />
+            </label>
+            <label className="field-group" htmlFor="staff-view-category">
+              Staff category
+              <input
+                id="staff-view-category"
+                type="text"
+                value={staffViewCategory}
+                onChange={(event) => setStaffViewCategory(event.target.value)}
+                placeholder="Type staff category"
+              />
+            </label>
+          </div>
+        </section>
         <p className="upload-storage-note screen-only" style={{ marginTop: '8px' }}>Uploaded files and this application are stored in this browser demo only; they are not sent to a server.</p>
 
         <div className="form-actions preview-actions screen-only" style={{ marginTop: '10px' }}>
           <button type="button" className="secondary-btn" onClick={() => navigate('/register?step=9')}>
             <ArrowLeft size={16} /> Previous
           </button>
+          <button type="button" className="secondary-btn" onClick={handleSaveDraft}>
+            <Save size={16} /> Save
+          </button>
           <button type="button" className="secondary-btn" onClick={() => window.print()}>
-            <Printer size={16} /> Print / Save as PDF
+            <Printer size={16} /> Print
           </button>
           <button type="button" className="secondary-btn" onClick={() => navigate('/payment')}>
             <CreditCard size={16} /> Confirm Seat

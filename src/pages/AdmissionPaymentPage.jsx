@@ -9,7 +9,7 @@ const DEMO_PAYMENT_QR_VALUE = 'CMS ADMISSION PAYMENT DEMO ONLY - NO PAYMENT ADDR
 export default function AdmissionPaymentPage() {
   const navigate = useNavigate();
   const { draft, paymentSettings, submitApplication } = useAppContext();
-  const paymentQrs = paymentSettings.paymentQrs || [paymentSettings.paymentQr || null, null];
+  const paymentQr = paymentSettings.paymentQrs?.[0] || paymentSettings.paymentQr || null;
 
   const handleConfirm = () => {
     const application = submitApplication({
@@ -37,37 +37,24 @@ export default function AdmissionPaymentPage() {
         </div>
 
         <section className="payment-qr-section" style={{ background: 'rgba(255,255,255,0.38)' }}>
-          <h3>Payment QR codes</h3>
-          <div className="payment-qr-grid">
-            {[0, 1].map((index) => {
-              const qr = paymentQrs[index];
-              return (
-                <div className="payment-qr-card" key={index}>
-                  <h4>Payment QR {index + 1}</h4>
-                  {qr?.dataUrl ? (
-                    <img
-                      className="payment-qr-image"
-                      src={qr.dataUrl}
-                      alt={`Payment QR code ${index + 1}`}
-                    />
-                  ) : (
-                    <QRCodeSVG
-                      className="payment-qr-image"
-                      size={240}
-                      value={`${DEMO_PAYMENT_QR_VALUE} ${index + 1}`}
-                      level="H"
-                      marginSize={4}
-                      bgColor="#fff"
-                      fgColor="#004D38"
-                      aria-label={`Demo-only QR code ${index + 1}; does not initiate a payment`}
-                    />
-                  )}
-                  <p>{qr?.dataUrl ? 'QR image configured by the college.' : 'Demo placeholder only; no payment destination is configured.'}</p>
-                </div>
-              );
-            })}
-          </div>
-          <p>Scanning a demo placeholder does not send money, open a payment address, or notify the college. Payments are not processed or verified on this page.</p>
+          <h3>Payment QR code</h3>
+          {paymentQr?.dataUrl ? (
+            <img className="payment-qr-image" src={paymentQr.dataUrl} alt="College payment QR code" />
+          ) : (
+            <QRCodeSVG
+              className="payment-qr-image"
+              size={240}
+              value={DEMO_PAYMENT_QR_VALUE}
+              level="H"
+              marginSize={4}
+              bgColor="#fff"
+              fgColor="#004D38"
+              aria-label="Demo-only QR code; does not initiate a payment"
+            />
+          )}
+          <p>{paymentQr?.dataUrl ? 'QR image configured by the college.' : 'Demo placeholder only; no payment destination is configured.'}</p>
+          <p className="payment-upi-id"><strong>UPI ID:</strong> <code>{paymentSettings.upiId || 'Not configured'}</code></p>
+          <p>Scanning a demo placeholder does not send money or notify the college. Payments are not processed or verified on this page.</p>
         </section>
 
         <section className="payment-status" aria-live="polite" style={{ background: 'rgba(255,255,255,0.38)' }}>

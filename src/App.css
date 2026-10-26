@@ -589,6 +589,13 @@
   width: auto;
 }
 
+.office-document-checkbox {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 0 auto;
+}
+
 .signature-sections {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -943,6 +950,24 @@
   background-color: rgba(248, 250, 249, 0.78);
 }
 
+.staff-view-section {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(248, 250, 249, 0.78);
+}
+
+.staff-view-section h3 {
+  margin-bottom: 8px;
+}
+
+.staff-view-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .preview-grid {
   display: grid;
   gap: 20px;
@@ -1062,27 +1087,15 @@
   background: white;
 }
 
-.payment-qr-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+.payment-upi-id {
+  color: #111;
+  font-size: 1.1rem;
 }
 
-.payment-qr-card {
-  min-width: 0;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.55);
-}
-
-.payment-qr-card h4,
-.payment-qr-card p {
-  text-align: center;
-}
-
-.payment-qr-card p {
-  color: var(--text-soft);
+.payment-upi-id code {
+  color: #111;
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
 .fee-structure-preview {
@@ -1459,7 +1472,7 @@
   .two-panel,
   .signature-sections,
   .settings-grid,
-  .payment-qr-grid,
+
   .stats-grid,
   .panel-grid,
   .dashboard-filters {
@@ -1491,7 +1504,8 @@
 
   .admission-category-choice,
   .two-choice-grid,
-  .payment-meta {
+  .payment-meta,
+  .staff-view-fields {
     grid-template-columns: 1fr;
   }
 

@@ -564,10 +564,14 @@ export default function RegisterPage() {
       </div>
       <div className="field-group">
         <label htmlFor="category">Category <span className="required-indicator">*</span></label>
-        <select id="category" required value={formData.category || ''} onChange={(event) => updateField('category', event.target.value)}>
-          <option value="">Choose category</option>
-          {['General', 'Reserved'].map((category) => <option key={category} value={category}>{category}</option>)}
-        </select>
+        <input
+          id="category"
+          type="text"
+          required
+          value={formData.category || ''}
+          onChange={(event) => updateField('category', event.target.value)}
+          placeholder="Type category"
+        />
         {errors.category ? <small className="error-text">{errors.category}</small> : null}
       </div>
       <div className="field-group">

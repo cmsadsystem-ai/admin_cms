@@ -10,6 +10,7 @@ const defaultStorage = {
   },
   cmsPaymentSettings: {
     feeAmount: '',
+    upiId: 'cms@bank',
     paymentQrs: [null, null],
     feeStructure: null,
   },

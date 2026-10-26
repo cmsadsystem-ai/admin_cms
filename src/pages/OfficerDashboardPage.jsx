@@ -90,6 +90,7 @@ export default function OfficerDashboardPage() {
         <div className="stats-grid">
           <div className="stat-card"><span>Enquiring</span><strong>{applications.filter((app) => app.status === 'Enquiring').length}</strong></div>
           <div className="stat-card"><span>Confirmed</span><strong>{applications.filter((app) => app.status === 'Confirmed').length}</strong></div>
+          <div className="stat-card"><span>Sent to VC</span><strong>{applications.filter((app) => app.status === 'Sent to VC').length}</strong></div>
           <div className="stat-card"><span>Matching applications</span><strong>{filteredApplications.length}</strong></div>
         </div>
 
@@ -127,12 +128,12 @@ export default function OfficerDashboardPage() {
             </div>
             <table className="data-table">
               <thead>
-                <tr><th>App ID</th><th>Student</th><th>Course</th><th>Date</th><th>Status</th></tr>
+                <tr><th>App ID</th><th>Student</th><th>Course</th><th>Date</th><th>Status</th><th>Action</th></tr>
               </thead>
               <tbody>
                 {confirmed.length ? confirmed.slice(0, 8).map((app) => (
-                  <tr key={app.id}><td>{app.id}</td><td>{app.studentName}</td><td>{app.coursePreference?.firstPreference || '—'}</td><td>{formatDate(app.confirmedAt || app.submittedAt)}</td><td><span className="badge badge-success">Confirmed</span></td></tr>
-                )) : <tr><td colSpan="5">No confirmed applications yet.</td></tr>}
+                  <tr key={app.id}><td>{app.id}</td><td>{app.studentName}</td><td>{app.coursePreference?.firstPreference || '—'}</td><td>{formatDate(app.confirmedAt || app.submittedAt)}</td><td><span className="badge badge-success">Confirmed</span></td><td><Link to={`/officer/application/${app.id}`}>Review / Send to VC</Link></td></tr>
+                )) : <tr><td colSpan="6">No confirmed applications waiting to be sent to VC.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -149,7 +150,7 @@ export default function OfficerDashboardPage() {
             </thead>
             <tbody>
               {[...filteredApplications].sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)).slice(0, 6).map((app) => (
-                <tr key={app.id}><td>{app.id}</td><td>{app.studentName}</td><td>{app.emisId}</td><td>{app.coursePreference?.firstPreference || '—'}</td><td><span className={`badge ${app.status === 'Confirmed' ? 'badge-success' : 'badge-warning'}`}>{app.status}</span></td><td>{formatDate(app.submittedAt)}</td><td><Link to={`/officer/application/${app.id}`}>Review <ArrowRight size={14} /></Link></td></tr>
+                <tr key={app.id}><td>{app.id}</td><td>{app.studentName}</td><td>{app.emisId}</td><td>{app.coursePreference?.firstPreference || '—'}</td><td><span className={`badge ${app.status === 'Enquiring' ? 'badge-warning' : 'badge-success'}`}>{app.status}</span></td><td>{formatDate(app.submittedAt)}</td><td><Link to={`/officer/application/${app.id}`}>Review <ArrowRight size={14} /></Link></td></tr>
               ))}
             </tbody>
           </table>

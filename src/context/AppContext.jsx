@@ -17,11 +17,13 @@ export function AppProvider({ children }) {
   const [paymentSettings, setPaymentSettings] = useState(() => {
     const settings = readStorage(STORAGE_KEYS.cmsPaymentSettings, {
       feeAmount: '',
+      upiId: 'cms@bank',
       paymentQrs: [null, null],
       feeStructure: null,
     });
     return {
       ...settings,
+      upiId: settings.upiId ?? 'cms@bank',
       paymentQrs: settings.paymentQrs || [settings.paymentQr || null, null],
     };
   });
@@ -152,13 +154,26 @@ export function AppProvider({ children }) {
     addHistoryEntry(applicationId, 'Application confirmed by demo officer.', actor);
   };
 
+  const forwardApplicationToVC = (applicationId, actor = 'Admission Officer') => {
+    setApplications((current) => current.map((item) => {
+      if (item.id !== applicationId) return item;
+      return {
+        ...item,
+        status: 'Sent to VC',
+        forwardedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }));
+    addHistoryEntry(applicationId, 'Application forwarded to the VC list by the admission office.', actor);
+  };
+
   const resetDemoData = () => {
     resetStorage();
     setAuth({ role: null, username: null });
     setDraft(getInitialDraft());
     setApplications([]);
     setBackgroundSettings({ enabled: true, videoDataUrl: '', videoMimeType: '', playbackMode: 'muted' });
-    setPaymentSettings({ feeAmount: '', paymentQrs: [null, null], feeStructure: null });
+    setPaymentSettings({ feeAmount: '', upiId: 'cms@bank', paymentQrs: [null, null], feeStructure: null });
     setCorrectionHistory([]);
     setLastSubmitted(null);
   };
@@ -177,6 +192,7 @@ export function AppProvider({ children }) {
     submitApplication,
     updateApplication,
     confirmApplication,
+    forwardApplicationToVC,
     addHistoryEntry,
     dismissDraft,
     resetDemoData,

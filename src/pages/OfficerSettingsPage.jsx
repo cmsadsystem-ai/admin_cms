@@ -134,7 +134,7 @@ export default function OfficerSettingsPage() {
           <div>
             <p className="eyebrow accent">College configuration</p>
             <h3>Admission payment details</h3>
-            <p className="field-help">Configure the approved fee, two payment QR images, and fee-structure document here. Payment is not processed or verified by this frontend demo.</p>
+            <p className="field-help">Configure the approved fee, UPI ID, payment QR image, and fee-structure document here. Payment is not processed or verified by this frontend demo.</p>
           </div>
           <div className="field-group">
             <label htmlFor="admission-fee">Admission fee amount (INR)</label>
@@ -147,25 +147,29 @@ export default function OfficerSettingsPage() {
               onChange={(event) => setPaymentSettings((current) => ({ ...current, feeAmount: event.target.value }))}
             />
           </div>
-          {[0, 1].map((index) => (
-            <FileUploadField
-              key={index}
-              label={`Payment QR code ${index + 1} (optional)`}
-              imageOnly
-              value={paymentSettings.paymentQrs?.[index] || null}
-              onChange={(qr) => setPaymentSettings((current) => {
-                const paymentQrs = [...(current.paymentQrs || [current.paymentQr || null, null])];
-                paymentQrs[index] = qr;
-                return { ...current, paymentQrs };
-              })}
+          <div className="field-group">
+            <label htmlFor="payment-upi-id">UPI ID</label>
+            <input
+              id="payment-upi-id"
+              type="text"
+              autoComplete="off"
+              placeholder="name@bank"
+              value={paymentSettings.upiId || ''}
+              onChange={(event) => setPaymentSettings((current) => ({ ...current, upiId: event.target.value.trim() }))}
             />
-          ))}
+          </div>
+          <FileUploadField
+            label="Payment QR code (optional)"
+            imageOnly
+            value={paymentSettings.paymentQrs?.[0] || paymentSettings.paymentQr || null}
+            onChange={(qr) => setPaymentSettings((current) => ({ ...current, paymentQrs: [qr, null] }))}
+          />
           <FileUploadField
             label="College fee structure (PDF or image)"
             value={paymentSettings.feeStructure}
             onChange={(feeStructure) => setPaymentSettings((current) => ({ ...current, feeStructure }))}
           />
-          <small className="upload-storage-note">Fee, QR images, and fee structure are saved in this browser only. They are not a payment gateway or a verified payment record.</small>
+          <small className="upload-storage-note">Fee, UPI ID, QR image, and fee structure are saved in this browser only. They are not a payment gateway or a verified payment record.</small>
         </div>
       </section>
     </main>

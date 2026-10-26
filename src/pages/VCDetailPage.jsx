@@ -7,15 +7,15 @@ import { downloadApplicationsCsv } from '../utils/helpers';
 export default function VCDetailPage() {
   const { id } = useParams();
   const { applications } = useAppContext();
-  const application = applications.find((item) => item.id === id && item.status === 'Confirmed');
+  const application = applications.find((item) => item.id === id && item.status === 'Sent to VC');
 
   if (!application) {
     return (
       <main className="page-shell preview-shell">
         <div className="content-panel empty-panel">
-          <h2>Confirmed application unavailable</h2>
-          <p>The record is either missing or the student is not in the confirmed list.</p>
-          <Link to="/vc/dashboard" className="primary-btn">Return to confirmed list</Link>
+          <h2>Application unavailable</h2>
+          <p>The record is either missing or it has not been sent to the VC list by the admission office.</p>
+          <Link to="/vc/dashboard" className="primary-btn">Return to VC list</Link>
         </div>
       </main>
     );
@@ -30,7 +30,7 @@ export default function VCDetailPage() {
       <section className="content-panel application-preview">
         <div className="section-header space-between">
           <div>
-            <p className="eyebrow accent">Confirmed admission record</p>
+            <p className="eyebrow accent">Admission office forwarded record</p>
             <h2>{application.studentName}</h2>
           </div>
           <div className="preview-brand"><img src="/cms-logo.png" alt="CMS logo" className="brand-logo small" /> <span>{application.id}</span></div>

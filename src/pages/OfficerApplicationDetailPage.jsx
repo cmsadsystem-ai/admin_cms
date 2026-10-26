@@ -5,10 +5,28 @@ import { useAppContext } from '../context/AppContext';
 import ApplicationDocuments from '../components/ApplicationDocuments';
 import { formatDate } from '../utils/helpers';
 
+const officeDocuments = [
+  ['SSLC', 'SSLC Certificate'],
+  ['HSC', 'HSC Certificate'],
+  ['TC', 'Transfer Certificate (TC)'],
+  ['CC', 'Conduct Certificate (CC)'],
+  ['NativityCertificate', 'Nativity Certificate'],
+  ['IncomeCertificate', 'Income Certificate'],
+  ['AadhaarCard', 'Aadhaar Document'],
+  ['FirstGraduateCertificate', 'First Graduate Certificate'],
+  ['PassportSizePhotographs', 'Student Photo'],
+];
+
 export default function OfficerApplicationDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { applications, updateApplication, confirmApplication, correctionHistory } = useAppContext();
+  const {
+    applications,
+    updateApplication,
+    confirmApplication,
+    forwardApplicationToVC,
+    correctionHistory,
+  } = useAppContext();
   const application = useMemo(() => applications.find((item) => item.id === id), [applications, id]);
   const [draftApplication, setDraftApplication] = useState(() => application || {});
   const [note, setNote] = useState('');
@@ -33,12 +51,48 @@ export default function OfficerApplicationDetailPage() {
     alert('Changes saved locally and logged in the demo history.');
   };
 
+  const saveCurrentChanges = () => {
+    updateApplication(id, draftApplication, note, 'Admission Officer');
+    setNote('');
+  };
+
   const handleConfirm = () => {
+    if (application.status !== 'Enquiring') return;
     const confirmed = window.confirm('Confirm this application and move it to the confirmed list?');
     if (!confirmed) return;
+    saveCurrentChanges();
     confirmApplication(id, 'Admission Officer');
     navigate('/officer/dashboard', { replace: true });
   };
+
+  const handleForwardToVC = () => {
+    if (application.status !== 'Confirmed') return;
+    const confirmed = window.confirm('Send this confirmed application to the VC list?');
+    if (!confirmed) return;
+    saveCurrentChanges();
+    forwardApplicationToVC(id, 'Admission Officer');
+    navigate('/officer/dashboard', { replace: true });
+  };
+
+  const updateDocumentCheck = (documentKey, type, checked) => {
+    setDraftApplication((previous) => ({
+      ...previous,
+      documentChecklist: {
+        ...previous.documentChecklist,
+        [documentKey]: {
+          ...previous.documentChecklist?.[documentKey],
+          [type]: checked,
+        },
+      },
+    }));
+  };
+
+  const actionLabel = application.status === 'Enquiring'
+    ? 'Confirm Application'
+    : application.status === 'Confirmed'
+      ? 'Send to VC'
+      : 'Already sent to VC';
+  const handleWorkflowAction = application.status === 'Enquiring' ? handleConfirm : handleForwardToVC;
 
   return (
     <main className="page-shell admin-shell">
@@ -59,7 +113,11 @@ export default function OfficerApplicationDetailPage() {
             <h2>{application.id}</h2>
           </div>
           <div className="toolbar">
-            <button type="button" className="primary-btn compact" onClick={handleConfirm}><CheckCheck size={16} /> Confirm Application</button>
+            {application.status !== 'Sent to VC' ? (
+              <button type="button" className="primary-btn compact" onClick={handleWorkflowAction}>
+                <CheckCheck size={16} /> {actionLabel}
+              </button>
+            ) : <span className="badge badge-success">{actionLabel}</span>}
           </div>
         </header>
 
@@ -79,6 +137,35 @@ export default function OfficerApplicationDetailPage() {
             studentSignature={draftApplication.studentSignature}
             parentSignature={draftApplication.parentSignature}
           />
+
+          <section className="certificate-status-wrap">
+            <h3>Office use — documents received</h3>
+            <p className="field-help">Tick Original or Xerox after the physical certificate has been received. Uploaded files are shown above for reference.</p>
+            <div className="table-scroll">
+              <table className="data-table certificate-table">
+                <thead><tr><th>Document</th><th>Student upload</th><th>Original received</th><th>Xerox received</th></tr></thead>
+                <tbody>
+                  {officeDocuments.map(([key, label]) => (
+                    <tr key={key}>
+                      <td>{label}</td>
+                      <td>{draftApplication.documents?.[key]?.dataUrl ? 'Uploaded' : 'Not uploaded'}</td>
+                      {['original', 'xerox'].map((type) => (
+                        <td key={type}>
+                          <input
+                            type="checkbox"
+                            className="office-document-checkbox"
+                            aria-label={`${label} ${type} received`}
+                            checked={Boolean(draftApplication.documentChecklist?.[key]?.[type])}
+                            onChange={(event) => updateDocumentCheck(key, type, event.target.checked)}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
           <div className="detail-history">
             <h3>History</h3>

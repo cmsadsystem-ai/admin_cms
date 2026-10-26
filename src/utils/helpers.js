@@ -104,6 +104,8 @@ export function getInitialDraft() {
     parentMobile: '',
     community: '',
     category: '',
+    staffViewName: '',
+    staffViewCategory: '',
     bloodGroup: '',
     emisId: '',
     communicationAddress: '',
