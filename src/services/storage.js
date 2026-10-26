@@ -10,7 +10,7 @@ const defaultStorage = {
   },
   cmsPaymentSettings: {
     feeAmount: '',
-    paymentQr: null,
+    paymentQrs: [null, null],
     feeStructure: null,
   },
   cmsLastSubmittedApplication: null,

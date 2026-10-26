@@ -134,7 +134,7 @@ export default function OfficerSettingsPage() {
           <div>
             <p className="eyebrow accent">College configuration</p>
             <h3>Admission payment details</h3>
-            <p className="field-help">Configure the approved fee and fee-structure document here. The applicant Payment page currently uses a demo-only QR and cannot process or verify payments; the uploaded QR is retained for later official integration.</p>
+            <p className="field-help">Configure the approved fee, two payment QR images, and fee-structure document here. Payment is not processed or verified by this frontend demo.</p>
           </div>
           <div className="field-group">
             <label htmlFor="admission-fee">Admission fee amount (INR)</label>
@@ -147,18 +147,25 @@ export default function OfficerSettingsPage() {
               onChange={(event) => setPaymentSettings((current) => ({ ...current, feeAmount: event.target.value }))}
             />
           </div>
-          <FileUploadField
-            label="Official payment QR image (optional)"
-            imageOnly
-            value={paymentSettings.paymentQr}
-            onChange={(paymentQr) => setPaymentSettings((current) => ({ ...current, paymentQr }))}
-          />
+          {[0, 1].map((index) => (
+            <FileUploadField
+              key={index}
+              label={`Payment QR code ${index + 1} (optional)`}
+              imageOnly
+              value={paymentSettings.paymentQrs?.[index] || null}
+              onChange={(qr) => setPaymentSettings((current) => {
+                const paymentQrs = [...(current.paymentQrs || [current.paymentQr || null, null])];
+                paymentQrs[index] = qr;
+                return { ...current, paymentQrs };
+              })}
+            />
+          ))}
           <FileUploadField
             label="College fee structure (PDF or image)"
             value={paymentSettings.feeStructure}
             onChange={(feeStructure) => setPaymentSettings((current) => ({ ...current, feeStructure }))}
           />
-          <small className="upload-storage-note">Fee, QR, and fee structure settings are stored in this browser only. They are not a payment gateway or a verified payment record.</small>
+          <small className="upload-storage-note">Fee, QR images, and fee structure are saved in this browser only. They are not a payment gateway or a verified payment record.</small>
         </div>
       </section>
     </main>

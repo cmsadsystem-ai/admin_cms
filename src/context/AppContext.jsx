@@ -14,11 +14,17 @@ export function AppProvider({ children }) {
     videoMimeType: '',
     playbackMode: 'muted',
   }));
-  const [paymentSettings, setPaymentSettings] = useState(() => readStorage(STORAGE_KEYS.cmsPaymentSettings, {
-    feeAmount: '',
-    paymentQr: null,
-    feeStructure: null,
-  }));
+  const [paymentSettings, setPaymentSettings] = useState(() => {
+    const settings = readStorage(STORAGE_KEYS.cmsPaymentSettings, {
+      feeAmount: '',
+      paymentQrs: [null, null],
+      feeStructure: null,
+    });
+    return {
+      ...settings,
+      paymentQrs: settings.paymentQrs || [settings.paymentQr || null, null],
+    };
+  });
   const [correctionHistory, setCorrectionHistory] = useState(() => readStorage(STORAGE_KEYS.cmsCorrectionHistory, []));
   const [lastSubmitted, setLastSubmitted] = useState(() => readStorage(STORAGE_KEYS.cmsLastSubmittedApplication, null));
 
@@ -152,7 +158,7 @@ export function AppProvider({ children }) {
     setDraft(getInitialDraft());
     setApplications([]);
     setBackgroundSettings({ enabled: true, videoDataUrl: '', videoMimeType: '', playbackMode: 'muted' });
-    setPaymentSettings({ feeAmount: '', paymentQr: null, feeStructure: null });
+    setPaymentSettings({ feeAmount: '', paymentQrs: [null, null], feeStructure: null });
     setCorrectionHistory([]);
     setLastSubmitted(null);
   };

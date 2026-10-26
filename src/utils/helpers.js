@@ -1,11 +1,10 @@
 export const PROGRAMME_COURSES = {
   UG: {
-    'B.E': ['CSE', 'BME', 'CS', 'ECE', 'MECH'],
+    'B.E': ['CSE', 'BME', 'CS', 'ECE', 'MECH', 'Electrical and Computer Engineering'],
     'B.Tech': ['AI&DS', 'AI&ML'],
   },
   PG: {
-    'M.E': [],
-    'M.Tech': [],
+    'M.E': ['VLSI', 'CSE', 'BME', 'ISE'],
   },
 };
 
@@ -104,6 +103,7 @@ export function getInitialDraft() {
     studentMobile: '',
     parentMobile: '',
     community: '',
+    category: '',
     bloodGroup: '',
     emisId: '',
     communicationAddress: '',

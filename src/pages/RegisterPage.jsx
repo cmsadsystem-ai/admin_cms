@@ -78,12 +78,16 @@ function formatAadhaar(value) {
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { draft, saveDraft } = useAppContext();
+  const savedProgramme = draft?.programme || '';
+  const savedDegree = PROGRAMME_COURSES[savedProgramme]?.[draft?.degree] ? draft.degree : '';
+  const savedCourses = PROGRAMME_COURSES[savedProgramme]?.[savedDegree] || [];
   const requestedStep = Number(new URLSearchParams(window.location.search).get('step'));
   const [currentStep, setCurrentStep] = useState(() => (
     requestedStep >= 1 && requestedStep <= steps.length
       ? requestedStep
       : 1
   ));
+  const [todayDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [errors, setErrors] = useState({});
   const [emisStatus, setEmisStatus] = useState('idle');
   const [emisMessage, setEmisMessage] = useState('');
@@ -93,14 +97,17 @@ export default function RegisterPage() {
     signature: null,
     aadhaar: formatAadhaar(draft?.aadhaar),
     admissionCategory: normalizeAdmissionCategory(draft?.admissionCategory),
-    programme: draft?.programme || '',
-    degree: draft?.degree || '',
+    programme: savedProgramme,
+    degree: savedDegree,
     physicsMarks: draft?.physicsMarks ?? getLegacySubjectMarks(draft?.physicsTheory, draft?.physicsPractical),
     chemistryMarks: draft?.chemistryMarks ?? getLegacySubjectMarks(draft?.chemistryTheory, draft?.chemistryPractical),
     fatherMobile: draft?.fatherMobile || draft?.parentMobile || '',
     coursePreference: {
-      firstPreference: draft?.coursePreference?.firstPreference || '',
-      additionalPreferences: draft?.coursePreference?.additionalPreferences || [],
+      firstPreference: savedCourses.includes(draft?.coursePreference?.firstPreference)
+        ? draft.coursePreference.firstPreference
+        : '',
+      additionalPreferences: (draft?.coursePreference?.additionalPreferences || [])
+        .filter((course) => savedCourses.includes(course)),
     },
     certificates: draft?.certificates || {},
     documents: draft?.documents || {},
@@ -116,6 +123,58 @@ export default function RegisterPage() {
     physics: formData.physicsMarks,
     chemistry: formData.chemistryMarks,
   }), [formData.mathematics, formData.physicsMarks, formData.chemistryMarks]);
+  const completedStepCount = useMemo(() => {
+    const isValidMark = (value) => (
+      value !== '' && value !== null && value !== undefined
+      && Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 100
+    );
+    const isValidHscMark = formData.hscMarks !== '' && formData.hscMarks !== null
+      && formData.hscMarks !== undefined && Number.isFinite(Number(formData.hscMarks))
+      && Number(formData.hscMarks) >= 0;
+    const stepsComplete = [
+      Boolean(formData.admissionCategory),
+      Boolean(formData.programme && formData.degree
+        && (!availableCourses.length || formData.coursePreference.firstPreference)),
+      ['Yes', 'No'].includes(formData.firstGraduate),
+      Boolean(
+        ['studentName', 'dateOfBirth', 'gender', 'aadhaar', 'bloodGroup', 'community', 'category',
+          'studentMobile', 'communicationAddress', 'district', 'state', 'pinCode']
+          .every((field) => String(formData[field] || '').trim())
+        && formData.dateOfBirth <= todayDate
+        && !getIndianMobileError(formData.studentMobile)
+        && /^\d{12}$/.test(formData.aadhaar.replace(/\s/g, ''))
+        && /^\d{6}$/.test(formData.pinCode),
+      ),
+      Boolean(
+        ['fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'fatherMobile', 'motherMobile']
+          .every((field) => String(formData[field] || '').trim())
+        && !getIndianMobileError(formData.fatherMobile)
+        && !getIndianMobileError(formData.motherMobile)
+        && (!formData.guardianMobile || !getIndianMobileError(formData.guardianMobile)),
+      ),
+      Boolean(formData.accommodation
+        && (formData.accommodation !== 'Day Scholar' || String(formData.busRoute || '').trim())),
+      Boolean(
+        String(formData.schoolName || '').trim()
+        && String(formData.schoolAddress || '').trim()
+        && isValidHscMark
+        && requiredMarks.every((field) => isValidMark(formData[field])),
+      ),
+      Boolean(
+        formData.declaration
+        && formData.parentDeclaration
+        && (formData.studentSignature?.dataUrl || formData.signature?.dataUrl)
+        && formData.parentSignature?.dataUrl,
+      ),
+      currentStep >= 9,
+    ];
+    let count = 0;
+    for (const complete of stepsComplete) {
+      if (!complete) break;
+      count += 1;
+    }
+    return count;
+  }, [formData, currentStep, availableCourses.length, todayDate]);
 
   useEffect(() => {
     saveDraft({ ...formData, cutOffMarks: cutOffValue ?? '', workflowStep: currentStep, workflowVersion: 2 });
@@ -172,6 +231,7 @@ export default function RegisterPage() {
         'aadhaar',
         'bloodGroup',
         'community',
+        'category',
         'studentMobile',
         'communicationAddress',
         'district',
@@ -503,8 +563,19 @@ export default function RegisterPage() {
         {errors.community ? <small className="error-text">{errors.community}</small> : null}
       </div>
       <div className="field-group">
+        <label htmlFor="category">Category <span className="required-indicator">*</span></label>
+        <select id="category" required value={formData.category || ''} onChange={(event) => updateField('category', event.target.value)}>
+          <option value="">Choose category</option>
+          {['General', 'Reserved'].map((category) => <option key={category} value={category}>{category}</option>)}
+        </select>
+        {errors.category ? <small className="error-text">{errors.category}</small> : null}
+      </div>
+      <div className="field-group">
         <label htmlFor="studentMobile">Mobile Number <span className="required-indicator">*</span></label>
-        <input id="studentMobile" type="tel" required inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} autoComplete="tel-national" value={formData.studentMobile || ''} onChange={(event) => updateField('studentMobile', event.target.value.replace(/\D/g, '').slice(0, 10))} />
+        <div className="phone-input">
+          <span aria-hidden="true">+91</span>
+          <input id="studentMobile" type="tel" required inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} autoComplete="tel-national" value={formData.studentMobile || ''} onChange={(event) => updateField('studentMobile', event.target.value.replace(/\D/g, '').slice(0, 10))} />
+        </div>
         {errors.studentMobile ? <small className="error-text">{errors.studentMobile}</small> : null}
       </div>
       <div className="field-group full-width">
@@ -560,17 +631,30 @@ export default function RegisterPage() {
       </div>
       <div className="field-group">
         <label htmlFor="fatherMobile">Father Mobile Number <span className="required-indicator">*</span></label>
-        <input id="fatherMobile" type="tel" required inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} value={formData.fatherMobile || ''} onChange={(event) => updateField('fatherMobile', event.target.value.replace(/\D/g, '').slice(0, 10))} />
+        <div className="phone-input">
+          <span aria-hidden="true">+91</span>
+          <input id="fatherMobile" type="tel" required inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} value={formData.fatherMobile || ''} onChange={(event) => updateField('fatherMobile', event.target.value.replace(/\D/g, '').slice(0, 10))} />
+        </div>
         {errors.fatherMobile ? <small className="error-text">{errors.fatherMobile}</small> : null}
       </div>
       <div className="field-group">
         <label htmlFor="motherMobile">Mother Mobile Number <span className="required-indicator">*</span></label>
-        <input id="motherMobile" type="tel" required inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} value={formData.motherMobile || ''} onChange={(event) => updateField('motherMobile', event.target.value.replace(/\D/g, '').slice(0, 10))} />
+        <div className="phone-input">
+          <span aria-hidden="true">+91</span>
+          <input id="motherMobile" type="tel" required inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} value={formData.motherMobile || ''} onChange={(event) => updateField('motherMobile', event.target.value.replace(/\D/g, '').slice(0, 10))} />
+        </div>
         {errors.motherMobile ? <small className="error-text">{errors.motherMobile}</small> : null}
       </div>
       <div className="field-group"><label htmlFor="guardianName">Guardian Name (optional)</label><input id="guardianName" value={formData.guardianName || ''} onChange={(event) => updateField('guardianName', event.target.value)} /></div>
       <div className="field-group"><label htmlFor="guardianOccupation">Guardian Occupation (optional)</label><input id="guardianOccupation" value={formData.guardianOccupation || ''} onChange={(event) => updateField('guardianOccupation', event.target.value)} /></div>
-      <div className="field-group"><label htmlFor="guardianMobile">Guardian Mobile Number (optional)</label><input id="guardianMobile" type="tel" inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} value={formData.guardianMobile || ''} onChange={(event) => updateField('guardianMobile', event.target.value.replace(/\D/g, '').slice(0, 10))} />{errors.guardianMobile ? <small className="error-text">{errors.guardianMobile}</small> : null}</div>
+      <div className="field-group">
+        <label htmlFor="guardianMobile">Guardian Mobile Number (optional)</label>
+        <div className="phone-input">
+          <span aria-hidden="true">+91</span>
+          <input id="guardianMobile" type="tel" inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} value={formData.guardianMobile || ''} onChange={(event) => updateField('guardianMobile', event.target.value.replace(/\D/g, '').slice(0, 10))} />
+        </div>
+        {errors.guardianMobile ? <small className="error-text">{errors.guardianMobile}</small> : null}
+      </div>
       <p className="field-help full-width">Guardian details are optional. Complete the required parent fields to continue.</p>
     </div>
   );
@@ -774,21 +858,17 @@ export default function RegisterPage() {
       <section className="content-panel form-panel">
         <div className="section-header space-between">
           <div>
-              <p className="eyebrow accent">Admissions Portal · Page {currentStep} of {steps.length}</p>
-            <h2>{steps[currentStep - 1]}</h2>
+              <p className="eyebrow accent">
+                <span className="admissions-portal-label">Admissions Portal</span>
+                <span className="completion-count">{completedStepCount}/9</span>
+              </p>
+            {currentStep !== 1 ? <h2>{steps[currentStep - 1]}</h2> : null}
           </div>
         </div>
 
-        <div className="stepper" aria-label="Admission form pages">
-          {steps.map((step, index) => (
-            <div key={step} className={`step-item ${currentStep === index + 1 ? 'active' : index + 1 < currentStep ? 'complete' : ''}`}>
-                <span>{index + 1}</span>
-              <small>{step}</small>
-            </div>
-          ))}
+        <div className="progress-bar" aria-label={`${completedStepCount} of 9 pages completed`}>
+          <span style={{ width: `${(completedStepCount / steps.length) * 100}%` }} />
         </div>
-
-        <div className="progress-bar"><span style={{ width: `${(currentStep / steps.length) * 100}%` }} /></div>
         {currentStep !== 9 ? (
           <p className="required-fields-note"><span className="required-indicator">*</span> Required fields. EMIS ID, guardian details, and document uploads are optional; student and parent signatures are required.</p>
         ) : null}

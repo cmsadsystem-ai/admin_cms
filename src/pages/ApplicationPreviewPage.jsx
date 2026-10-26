@@ -95,7 +95,8 @@ export default function ApplicationPreviewPage() {
             ['Aadhaar number', String(draft.aadhaar || '').replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ')],
             ['Blood group', draft.bloodGroup],
             ['Community', draft.community],
-            ['Mobile number', draft.studentMobile],
+            ['Category', draft.category],
+            ['Mobile number', draft.studentMobile ? `+91 ${draft.studentMobile}` : ''],
             ['EMIS ID', draft.emisId],
             ['District', draft.district],
             ['State', draft.state],
@@ -105,13 +106,13 @@ export default function ApplicationPreviewPage() {
           <PreviewBlock title="Parents and guardian details" rows={[
             ['Father name', draft.fatherName],
             ['Father occupation', draft.fatherOccupation],
-            ['Father mobile number', draft.fatherMobile || draft.parentMobile],
+            ['Father mobile number', (draft.fatherMobile || draft.parentMobile) ? `+91 ${draft.fatherMobile || draft.parentMobile}` : ''],
             ['Mother name', draft.motherName],
             ['Mother occupation', draft.motherOccupation],
-            ['Mother mobile number', draft.motherMobile],
+            ['Mother mobile number', draft.motherMobile ? `+91 ${draft.motherMobile}` : ''],
             ['Guardian name', draft.guardianName],
             ['Guardian occupation', draft.guardianOccupation],
-            ['Guardian mobile number', draft.guardianMobile],
+            ['Guardian mobile number', draft.guardianMobile ? `+91 ${draft.guardianMobile}` : ''],
           ]} />
           <PreviewBlock title="School and education" rows={[
             ['School name', draft.schoolName],

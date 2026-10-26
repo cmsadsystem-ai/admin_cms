@@ -8,7 +8,8 @@ const DEMO_PAYMENT_QR_VALUE = 'CMS ADMISSION PAYMENT DEMO ONLY - NO PAYMENT ADDR
 
 export default function AdmissionPaymentPage() {
   const navigate = useNavigate();
-  const { draft, submitApplication } = useAppContext();
+  const { draft, paymentSettings, submitApplication } = useAppContext();
+  const paymentQrs = paymentSettings.paymentQrs || [paymentSettings.paymentQr || null, null];
 
   const handleConfirm = () => {
     const application = submitApplication({
@@ -36,19 +37,37 @@ export default function AdmissionPaymentPage() {
         </div>
 
         <section className="payment-qr-section" style={{ background: 'rgba(255,255,255,0.38)' }}>
-          <h3>DEMO ONLY — NOT FOR REAL PAYMENT</h3>
-          <QRCodeSVG
-            className="payment-qr-image"
-            size={240}
-            value={DEMO_PAYMENT_QR_VALUE}
-            level="H"
-            marginSize={4}
-            bgColor="#fff"
-            fgColor="#004D38"
-            aria-label="Demo-only QR code; does not initiate a payment"
-          />
-          <p>This QR contains demo text only. Scanning it does not send money, open a payment address, or notify the college.</p>
-          <p>The official payment QR can replace this demo value in the payment component after the college approves its payment integration.</p>
+          <h3>Payment QR codes</h3>
+          <div className="payment-qr-grid">
+            {[0, 1].map((index) => {
+              const qr = paymentQrs[index];
+              return (
+                <div className="payment-qr-card" key={index}>
+                  <h4>Payment QR {index + 1}</h4>
+                  {qr?.dataUrl ? (
+                    <img
+                      className="payment-qr-image"
+                      src={qr.dataUrl}
+                      alt={`Payment QR code ${index + 1}`}
+                    />
+                  ) : (
+                    <QRCodeSVG
+                      className="payment-qr-image"
+                      size={240}
+                      value={`${DEMO_PAYMENT_QR_VALUE} ${index + 1}`}
+                      level="H"
+                      marginSize={4}
+                      bgColor="#fff"
+                      fgColor="#004D38"
+                      aria-label={`Demo-only QR code ${index + 1}; does not initiate a payment`}
+                    />
+                  )}
+                  <p>{qr?.dataUrl ? 'QR image configured by the college.' : 'Demo placeholder only; no payment destination is configured.'}</p>
+                </div>
+              );
+            })}
+          </div>
+          <p>Scanning a demo placeholder does not send money, open a payment address, or notify the college. Payments are not processed or verified on this page.</p>
         </section>
 
         <section className="payment-status" aria-live="polite" style={{ background: 'rgba(255,255,255,0.38)' }}>
