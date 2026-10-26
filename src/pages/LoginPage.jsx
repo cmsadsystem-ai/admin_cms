@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LockKeyhole, LogIn, ShieldCheck } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
       navigate(role === 'officer' ? '/officer/dashboard' : '/vc/dashboard', { replace: true });
       return;
     }
-    setError('Invalid demo credentials. Please use the supplied demo username and password.');
+    setError('Invalid username or password.');
   };
 
   return (
@@ -52,11 +52,6 @@ export default function LoginPage() {
             <p className="eyebrow accent">CMS College Portal</p>
             <h2>{credentialSet.title} Login</h2>
           </div>
-        </div>
-
-        <div className="security-banner">
-          <ShieldCheck size={18} />
-          <span>Demo-only credentials. Production authentication must be implemented by the backend.</span>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -87,16 +82,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="demo-credentials-box">
-          <div className="demo-row">
-            <LockKeyhole size={16} />
-            <span>Username: <strong>{credentialSet.username}</strong></span>
-          </div>
-          <div className="demo-row">
-            <LockKeyhole size={16} />
-            <span>Password: <strong>{credentialSet.password}</strong></span>
-          </div>
-        </div>
       </div>
     </main>
   );
